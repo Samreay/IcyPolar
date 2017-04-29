@@ -2,17 +2,8 @@
 
 import csv
 import json
-import datetime as dt
 
-
-def decimal_date_to_iso(dd):
-    if isinstance(dd, str):
-        dd = float(dd)
-
-    year = int(dd)
-    days = dt.timedelta((dd - year) * 365.25)
-    return (days + dt.datetime(year, 1, 1)).isoformat() + 'Z'
-
+import common
 
 header_length = 72
 
@@ -28,7 +19,7 @@ with open(input_file, 'r') as f:
         if i < header_length:
             continue
 
-        date = decimal_date_to_iso(row[2])
+        date = common.decimal_date_to_iso(row[2])
         trend_value = row[5]
         output_data[date] = trend_value
 
