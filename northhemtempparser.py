@@ -8,11 +8,11 @@ import datetime
 #                             , names=True)
 
 # Open a csv file
-global_temp = open('data/globaltemp.csv', 'r')
+global_temp = open('data/northhem.csv', 'r')
 global_temp.next()
 
 # Creation of dictionary for json file
-globaltempdic = {}
+tempdic = {}
 
 for row in global_temp:
     vals = row.split(',') # because csv
@@ -24,29 +24,10 @@ for row in global_temp:
         date = datetime.datetime.strptime(datename, '%Y_%m').isoformat() #creating standard datetime format
         date = date+'z' #apparently datetime needs a z on the end so hacky fix
 
-        globaltempdic[date] = vals[i+1] #fill that dictionary
+        tempdic[date] = vals[i+1] #fill that dictionary
 
-json_file = open('data/globaltemp_ave.json', 'w') #open a json file
-json.dump(globaltempdic, json_file) #fill that json file
+json_file = open('data/north_hem_temp_ave.json', 'w') #open a json file
+json.dump(tempdic, json_file) #fill that json file
 json_file.write('\n')
 json_file.close()
 
-
-# month_list = [global_temp["Jan"], global_temp["Feb"], global_temp["Mar"],
-#               global_temp["Apr"], global_temp["May"], global_temp["Jun"],
-#               global_temp["Jul"], global_temp["Aug"], global_temp["Sep"],
-#               global_temp["Oct"], global_temp["Nov"], global_temp["Dec"]]
-
-# print month_list
-
-# output_dic[global_temp["Year"]] = (global_temp["JD"], month_list)
-
-# output_dic = {}
-# years = global_temp["Year"]
-#
-# for year,  in years:
-#     output_dic[year] =
-# output_dic[global_temp["Year"]] = (monthlist)
-# print output_dic
-#
-#
