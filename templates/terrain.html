@@ -16,44 +16,103 @@
 <script src="/static/libs/d3.v3.min.js"></script>
 <script>
 
-    var width  = window.innerWidth, height = window.innerHeight, terrainSize = 60;
+    function getHeightData(img,scale) {
 
-    var scene = new THREE.Scene();
-    scene.add(new THREE.AmbientLight(0xeeeeee));
+        if (scale == undefined) scale=1;
 
-    var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, -terrainSize / 2, terrainSize / 2);
+        var canvas = document.createElement( 'canvas' );
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var context = canvas.getContext( '2d' );
 
-//    var renderer = new THREE.WebGLRenderer();
-    var renderer = new THREE.CanvasRenderer();
-    renderer.setSize(width, height);
+        var size = img.width * img.height;
+        var data = new Float32Array( size );
 
-    var controls = new THREE.TrackballControls(camera);
+        context.drawImage(img,0,0);
 
-    document.getElementById('webgl').appendChild(renderer.domElement);
+        for ( var i = 0; i < size; i ++ ) {
+            data[i] = 0
+        }
 
-//    var geometry = new THREE.PlaneGeometry(terrainSize, terrainSize, 511, 511);
-    var geometry = new THREE.PlaneGeometry(terrainSize, terrainSize, 100, 100);
+        var imgd = context.getImageData(0, 0, img.width, img.height);
+        var pix = imgd.data;
 
+        var j=0;
+        for (var i = 0; i<pix.length; i +=4) {
+            var all = pix[i]+pix[i+1]+pix[i+2];
+            data[j++] = all/(12*scale);
+        }
 
-
-    var material = new THREE.MeshPhongMaterial({
-//        map: THREE.ImageUtils.loadTexture('/static/terrain/jotunheimen-texture.jpg'),
-        map: THREE.ImageUtils.loadTexture('/static/terrain/jotunheimen.png'),
-        displacementMap: THREE.ImageUtils.loadTexture('/static/terrain/jotunheimen.png'),
-        displacementScale: 10
-    });
-
-    var plane = new THREE.Mesh(geometry, material);
-    scene.add(plane);
-
-    render();
-
-    function render() {
-        controls.update();
-        requestAnimationFrame(render);
-        renderer.render(scene, camera);
+        return data;
     }
+
+    var img = new Image();
+    img.onload = function () {
+
+        //get height data from img
+        var data = getHeightData(img);
+
+
+        var width  = window.innerWidth, height = window.innerHeight, terrainSize = 60;
+
+        var scene = new THREE.Scene();
+        scene.add(new THREE.AmbientLight(0xeeeeee));
+
+        var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        camera.position.set(0, -terrainSize / 2, terrainSize / 2);
+
+//            var renderer = new THREE.WebGLRenderer();
+        var renderer = new THREE.CanvasRenderer();
+        renderer.setSize(width, height);
+
+        var controls = new THREE.TrackballControls(camera);
+
+        document.getElementById('webgl').appendChild(renderer.domElement);
+
+        var plane = new THREE.PlaneGeometry(terrainSize, terrainSize, 199, 199);
+
+        var textureLoader = THREE.ImageUtils;
+        var colorMap = textureLoader.loadTexture('/static/terrain/jotunheimen-texture.jpg');
+
+
+
+        var material = new THREE.MeshBasicMaterial({
+            map: colorMap
+        });
+
+        var mesh = new THREE.Mesh(plane, material);
+
+        //set height of vertices
+        for ( var i = 0; i<mesh.geometry.vertices.length; i++ ) {
+            mesh.geometry.vertices[i].z = data[i] / 20;
+        }
+
+        scene.add(mesh);
+
+        render();
+
+
+        function render() {
+            controls.update();
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+        }
+
+
+        // plane
+//        var geometry = new THREE.PlaneGeometry(10,10,9,9);
+//        var texture = THREE.ImageUtils.loadTexture( 'images/heightmap2.png' );
+//        var material = new THREE.MeshLambertMaterial( { map: texture } );
+//        plane = new THREE.Mesh( geometry, material );
+//
+//
+//
+//        scene.add(plane);
+
+    };
+    // load img source
+    img.src = "/static/terrain/jotunheimen.png";
+
 
 
 </script>
