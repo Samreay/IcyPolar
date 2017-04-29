@@ -1,20 +1,37 @@
-import numpy as np
-import math
-import datetime
+#!/usr/bin/env python
 
-file = "./ANT_mass_changes_Watkins053116.csv"
-data = np.loadtxt(file, skiprows=14, delimiter=',')
+import csv
+import json
+import datetime as dt
 
-def decyear_to_utc(yeardec):
-    frac, year = math.modf(yeardec)
-    frac, day = math.modf(frac*365.25)
-    frac, hour = math.modf(frac*24)
-    frac, minute = math.modf(frac*60)
-    frac, second = math.modf(frac*60)
-    name = str(int(year)) + str(int(day)) + str(int(hour)) + str(int(minute)) + str(int(second))
-    obj = datetime.datetime.strptime(name, '%Y%j%H%M%S').isoformat()
-    return obj+"z"
 
-years = data[:,0]
-print 2005.54
-print decyear_to_utc(2005.54)
+def decimal_date_to_iso(dd):
+    if isinstance(dd, str):
+        dd = float(dd)
+
+    year = int(dd)
+    days = dt.timedelta((dd - year) * 365.25)
+    return (days + dt.datetime(year, 1, 1)).isoformat() + 'Z'
+
+
+header_length = 14
+
+input_file = "data/ANT_mass_changes_Watkins053116.csv"
+output_file = "data/mass_change.json"
+json_file = open(output_file, 'w')
+
+with open(input_file, 'r') as f:
+    data = csv.reader(f, delimiter=',', skipinitialspace=True)
+    output_data = {}
+
+    for i, row in enumerate(data):
+        if i < header_length:
+            continue
+
+        date = decimal_date_to_iso(row[0])
+        trend_value = row[3]
+        output_data[date] = trend_value
+
+json.dump(output_data, json_file)
+json_file.write('\n')
+json_file.close()
