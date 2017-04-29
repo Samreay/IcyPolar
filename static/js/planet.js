@@ -13,16 +13,17 @@
         borders:  { stroke: '#001320' }
     }));
     planet.loadPlugin(planetaryjs.plugins.pings());
+    planet.loadPlugin(vectorField());
     planet.loadPlugin(planetaryjs.plugins.zoom({
         scaleExtent: [500, 5000]
     }));
     planet.loadPlugin(planetaryjs.plugins.drag({
-        onDragStart: function() {
-            this.plugins.autorotate.pause();
-        },
-        onDragEnd: function() {
-            this.plugins.autorotate.resume();
-        }
+        // onDragStart: function() {
+        //     this.plugins.autorotate.pause();
+        // },
+        // onDragEnd: function() {
+        //     this.plugins.autorotate.resume();
+        // }
     }));
     // planet.loadPlugin(autorotate(1));
     planet.projection.rotate([100, -90, 0]);
@@ -57,6 +58,13 @@
         });
 
 
+    d3.json('/static/json/greenland.json', function(err, data) {
+        if (err) {
+            alert("Problem loading the greenland data.");
+            return;
+        }
+        planet.plugins.vectorField.setField(data["lat"], data["long"], data["vx"], data["vy"]);
+    });
     // Load our earthquake data and set up the controls.
     // The data consists of an array of objects in the following format:
     // {
@@ -226,4 +234,57 @@
             });
         };
     };
+
+
+    function vectorField(config) {
+        var lats = [], longs = [], vxs = [], vys = [];
+        config = config || {};
+        var main_color;
+
+        var setField = function(set_lat, set_long, set_vx, set_vy, options) {
+            options = options || {};
+            main_color = options.color || config.color || 'white';
+
+            lats = set_lat;
+            longs = set_long;
+            vxs = set_vx;
+            vys = set_vy;
+        };
+
+        var drawField = function(planet, context, now) {
+            var path = d3.geo.path().projection(planet.projection);
+
+            for (var i = 0; i < lats.length; i++) {
+                drawPoint(planet, context, now, lats[i], longs[i], vxs[i], vys[i], path);
+            }
+        };
+
+        var drawPoint = function(planet, context, now, lat, long, vx, vy) {
+            var color = d3.rgb(main_color);
+            color = "rgba(" + color.r + "," + color.g + "," + color.b + "," + 0.5 + ")";
+            context.strokeStyle = color;
+            // var circle = d3.geo.circle().origin([long, lat]).angle(0.01);
+            context.beginPath();
+            var x0y0 = planet.projection([long, lat]);
+            var x1y1 = planet.projection([long + 0.05 * vx, lat + 0.05 * vy]);
+            context.moveTo(x0y0[0], x0y0[1]);
+            context.lineTo(x1y1[0], x1y1[1]);
+            // planet.path.context(context)(circle);
+            context.stroke();
+        };
+
+        return function (planet) {
+            planet.plugins.vectorField = {
+                setField: setField
+            };
+
+            planet.onDraw(function() {
+                var now = new Date();
+                planet.withSavedContext(function(context) {
+                    drawField(planet, context, now);
+                });
+            });
+        };
+    };
+
 })();
