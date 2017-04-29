@@ -17,15 +17,11 @@ def decimal_date_to_iso(dd):
     return (days + dt.datetime(year, 1, 1)).isoformat() + 'Z'
 
 
-
-
 def LLA_to_ECEF(u, i, h):
-
-""" 
-This script takes any given latitude(u) and longitude(i) and elevation (h) and converts it into x,y,z 
-positions. Equation taken from http://au.mathworks.com/help/aeroblks/llatoecefposition.html
-
-"""
+    """ 
+    This script takes any given latitude(u) and longitude(i) and elevation (h) and converts it into x,y,z 
+    positions. Equation taken from http://au.mathworks.com/help/aeroblks/llatoecefposition.html
+    """
     
     R = float(6378137.0)
     b = float(6356752.3)
@@ -36,7 +32,7 @@ positions. Equation taken from http://au.mathworks.com/help/aeroblks/llatoecefpo
     py = rs * np.cos(the) * np.sin(i) + h * np.cos(u) * np.sin(i)
     pz = rs * np.sin(the) + h * np.sin(u)
 
-    return px,py,pz
+    return px, py, pz
 
 
 def Gen_test(minLng=0.0, maxLng=2.0*np.pi, minLat=-np.pi/2.0, maxLat=np.pi/2.0, num=100):
@@ -51,12 +47,11 @@ def Gen_test(minLng=0.0, maxLng=2.0*np.pi, minLat=-np.pi/2.0, maxLat=np.pi/2.0, 
     elevs = np.random.normal(size=num**2)*100000
     return lats, lngs, elevs
 
-def Plot_test():
 
+def Plot_test():
     # Generate some data
     lats, lngs, elevs = Gen_test()
     x, y , z = LLA_to_ECEF(lats, lngs, elevs)
-
 
     # Plotting to check snesible elliptical conversion
     fig = plt.figure()
