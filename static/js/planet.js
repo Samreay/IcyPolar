@@ -39,7 +39,7 @@
     var angles = d3.scale.pow()
         .exponent(3)
         .domain([2.5, 10])
-        .range([0.5, 15]);
+        .range([1.5, 15]);
     // And finally, a scale for mapping magnitudes to ping TTLs
     var ttls = d3.scale.pow()
         .exponent(3)
