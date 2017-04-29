@@ -24,7 +24,7 @@
             this.plugins.autorotate.resume();
         }
     }));
-    planet.loadPlugin(autorotate(2));
+    // planet.loadPlugin(autorotate(1));
     planet.projection.rotate([100, -90, 0]);
     planet.draw(canvas);
 
@@ -196,7 +196,7 @@
             planet.onInit(function() {
                 var width  = window.innerWidth + (options.extraWidth || 0);
                 var height = window.innerHeight + (options.extraHeight || 0);
-                planet.projection.scale(2.0 * Math.min(width, height) / 2);
+                planet.projection.scale(3.0 * Math.min(width, height) / 2);
             });
         };
     };
