@@ -9,12 +9,12 @@
     planet.loadPlugin(planetaryjs.plugins.earth({
         topojson: { file:   '/static/json/world-110m.json' },
         oceans:   { fill:   '#001320' },
-        land:     { fill:   '#06304e' },
+        land:     { fill:   '#06304e', stroke: '#989898', lineWidth: 0.4},
         borders:  { stroke: '#001320' }
     }));
     planet.loadPlugin(planetaryjs.plugins.pings());
     planet.loadPlugin(planetaryjs.plugins.zoom({
-        scaleExtent: [50, 5000]
+        scaleExtent: [500, 5000]
     }));
     planet.loadPlugin(planetaryjs.plugins.drag({
         onDragStart: function() {
@@ -24,8 +24,8 @@
             this.plugins.autorotate.resume();
         }
     }));
-    planet.loadPlugin(autorotate(5));
-    planet.projection.rotate([100, -10, 0]);
+    planet.loadPlugin(autorotate(2));
+    planet.projection.rotate([100, -90, 0]);
     planet.draw(canvas);
 
 
@@ -196,7 +196,7 @@
             planet.onInit(function() {
                 var width  = window.innerWidth + (options.extraWidth || 0);
                 var height = window.innerHeight + (options.extraHeight || 0);
-                planet.projection.scale(Math.min(width, height) / 2);
+                planet.projection.scale(2.0 * Math.min(width, height) / 2);
             });
         };
     };
