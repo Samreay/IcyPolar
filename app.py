@@ -4,6 +4,9 @@ from flask import Flask, send_file
 
 app = Flask(__name__)
 
+@app.route("/terrain")
+def terrain():
+    return send_file("templates/terrain.html")
 
 @app.route("/")
 def index():

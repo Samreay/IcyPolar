@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>terrain</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
+</head>
+<body>
+<div id="webgl"></div>
+<script src="/static/libs/three.min.js"></script>
+<script src="/static/libs/TrackballControls.js"></script>
+<script src="/static/libs/TerrainLoader.js"></script>
+<script src="/static/libs/d3.v3.min.js"></script>
+<script>
+
+    var width  = window.innerWidth,
+            height = window.innerHeight,
+            terrainSize = 60, // 60 x 60 km
+            heightFactor = terrainSize / 12;
+
+    var scene = new THREE.Scene();
+    scene.add(new THREE.AmbientLight(0xeeeeee));
+
+    var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, -terrainSize / 2, terrainSize / 2);
+
+//    var renderer = new THREE.WebGLRenderer();
+    var renderer = new THREE.CanvasRenderer();
+    renderer.setSize(width, height);
+
+    var terrainLoader = new THREE.TerrainLoader();
+    terrainLoader.load('/static/terrain/jotunheimen512.bin', createTerrain);
+
+    var controls = new THREE.TrackballControls(camera);
+
+    document.getElementById('webgl').appendChild(renderer.domElement);
+
+    render();
+
+    function render() {
+        controls.update();
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+
+    function createTerrain(data) {
+        var geometry = new THREE.PlaneGeometry(terrainSize, terrainSize, 511, 511);
+
+        for (var i = 0, l = geometry.vertices.length; i < l; i++) {
+            geometry.vertices[i].z = data[i] / 65535 * heightFactor;
+        }
+
+        var material = new THREE.MeshPhongMaterial({
+            map: THREE.ImageUtils.loadTexture('/static/terrain/jotunheimen-texture.jpg')
+        });
+
+        var plane = new THREE.Mesh(geometry, material);
+        scene.add(plane);
+
+    }
+
+    // Change coordinate space
+    function translate(point) {
+        return [point[0] - (terrainSize / 2), (terrainSize / 2) - point[1]];
+    }
+
+</script>
+</body>
+</html>
