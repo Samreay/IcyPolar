@@ -7,10 +7,10 @@
     planet.loadPlugin(autocenter({extraHeight: -30}));
     planet.loadPlugin(autoscale({extraHeight: -30}));
     planet.loadPlugin(planetaryjs.plugins.earth({
-        topojson: { file:   '/static/json/world-110m.json' },
-        oceans:   { fill:   '#001320' },
-        land:     { fill:   '#06304e', stroke: '#989898', lineWidth: 0.4},
-        borders:  { stroke: '#001320' }
+        topojson: {file: '/static/json/world-110m.json'},
+        oceans: {fill: '#001320'},
+        land: {fill: '#06304e', stroke: '#989898', lineWidth: 0.4},
+        borders: {stroke: '#001320'}
     }));
     planet.loadPlugin(planetaryjs.plugins.pings());
     planet.loadPlugin(vectorField());
@@ -29,13 +29,12 @@
     planet.projection.rotate([100, -90, 0]);
     planet.draw(canvas);
 
-
     // Create a color scale for the various earthquake magnitudes; the
     // minimum magnitude in our data set is 2.5.
     var colors = d3.scale.pow()
         .exponent(3)
         .domain([2, 4, 6, 8, 10])
-        .range(['white', 'yellow', 'orange', 'red', 'purple']);
+        .range(['white', 'white', 'yellow', 'orange', 'red']);
     // Also create a scale for mapping magnitudes to ping angle sizes
     var angles = d3.scale.pow()
         .exponent(3)
@@ -57,14 +56,32 @@
             return "Magnitude " + d;
         });
 
-
-    d3.json('/static/json/greenland.json', function(err, data) {
-        if (err) {
-            alert("Problem loading the greenland data.");
-            return;
-        }
-        planet.plugins.vectorField.setField(data["lat"], data["long"], data["vx"], data["vy"]);
-    });
+    // if (false) {
+    //
+    //     d3.json('/static/json/greenland.json', function (err, data) {
+    //         if (err) {
+    //             alert("Problem loading the greenland data.");
+    //             return;
+    //         }
+    //         planet.plugins.vectorField.setField(data["lat"], data["long"], data["vx"], data["vy"]);
+    //     });
+    // }
+    //
+    // if (false) {
+    //
+    //     d3.json('/static/json/vels.json', function (err, data) {
+    //         if (err) {
+    //             alert("Problem loading the greenland data.");
+    //             return;
+    //         }
+    //         var x1 = 0, x2 = 50, y1 = 80, y2 = 50;
+    //         for (var i = 0; i < data["lats"].length; i++) {
+    //             data["lats"][i] = data["lats"][i] * (y2 - y1) + y1;
+    //             data["longs"][i] = data["longs"][i] * (x2 - x1) + x1;
+    //         }
+    //         planet.plugins.vectorField.setField(data["lats"], data["longs"], data["vx"], data["vy"]);
+    //     });
+    // }
     // Load our earthquake data and set up the controls.
     // The data consists of an array of objects in the following format:
     // {
@@ -80,7 +97,34 @@
             return;
         }
 
-        var start = parseInt(data[0].time, 10);
+
+        var selectedLoc = function(index) {
+            console.log(data[index]);
+        };
+
+
+        canvas.onmouseup = function(event) {
+            var px = event.offsetX;
+            var py = event.offsetY;
+            console.log("Loc is ", px, " ", py);
+
+            var longlat = planet.projection.invert([px, py]);
+            var long = longlat[0];
+            var lat = longlat[1];
+
+            var threshold = 30;
+            for (var i = 0; i < data.length; i++) {
+                var loc = data[i];
+                var dist = (long - loc.lng)*(long - loc.lng) + (lat - loc.lat)*(lat - loc.lat);
+                if (dist < threshold) {
+                    selectedLoc(i);
+                    break;
+                }
+            }
+
+        };
+
+        var start = parseInt(data[0].time, 10) - 500;
         var end = parseInt(data[data.length - 1].time, 10);
         var currentTime = start;
         var lastTick = new Date().getTime();
@@ -100,26 +144,9 @@
         // 12 minutes of real time maps to the entirety of the
         // timespan covered by the data.
         var realToData = d3.scale.linear()
-            .domain([0, 1000 * 60 * 12])
+            .domain([0, 1000])
             .range([0, end - start]);
 
-        var paused = false;
-
-        // Pause playback and update the time display
-        // while scrubbing using the range input.
-        d3.select('#slider')
-            .on('change', function(d) {
-                currentTime = percentToDate(d3.event.target.value);
-                updateDate();
-            })
-            .call(d3.behavior.drag()
-                .on('dragstart', function() {
-                    paused = true;
-                })
-                .on('dragend', function() {
-                    paused = false;
-                })
-            );
 
 
         // The main playback loop; for each tick, we'll see how much
@@ -128,11 +155,6 @@
         // them to the globe with a color and angle relative to their magnitudes.
         d3.timer(function() {
             var now = new Date().getTime();
-
-            if (paused) {
-                lastTick = now;
-                return;
-            }
 
             var realDelta = now - lastTick;
             // Avoid switching back to the window only to see thousands of pings;
@@ -159,7 +181,6 @@
             currentTime += dataDelta;
             if (currentTime > end) currentTime = start;
             updateDate();
-            d3.select('#slider').property('value', percentToDate.invert(currentTime));
             lastTick = now;
         });
     });
@@ -204,7 +225,7 @@
             planet.onInit(function() {
                 var width  = window.innerWidth + (options.extraWidth || 0);
                 var height = window.innerHeight + (options.extraHeight || 0);
-                planet.projection.scale(3.0 * Math.min(width, height) / 2);
+                planet.projection.scale(1.0 * Math.min(width, height) / 2);
             });
         };
     };
