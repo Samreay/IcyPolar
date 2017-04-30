@@ -4,9 +4,13 @@ from flask import Flask, send_file
 
 app = Flask(__name__)
 
-@app.route("/terrain")
-def terrain():
-    return send_file("templates/terrain.html")
+@app.route("/antartica")
+def antartica():
+    return send_file("templates/antartica.html")
+
+@app.route("/glacier")
+def glacier():
+    return send_file("templates/glacier.html")
 
 @app.route("/")
 def index():
