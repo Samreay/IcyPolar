@@ -1,3 +1,3 @@
-[{"name":"thing1", "time":1000,"lat":81.975,"lng":-60.566,"mag":3.8},
-  {"name":"thing2","time":1100,"lat":80.358,"lng":-15.54,"mag":3.6},
-  {"name":"thing3","time":1200,"lat":75.451,"lng":-48.19,"mag":3.6}]
+[{"name":"thing1", "time":1000,"lat":-81.975,"lng":-60.566,"mag":3.8},
+  {"name":"thing2","time":1100,"lat":-70.358,"lng":115.54,"mag":3.6},
+  {"name":"thing3","time":1200,"lat":-72.451,"lng":10.19,"mag":3.6}]

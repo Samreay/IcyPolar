@@ -26,7 +26,7 @@
         // }
     }));
     // planet.loadPlugin(autorotate(1));
-    planet.projection.rotate([100, -90, 0]);
+    planet.projection.rotate([100, 90, 0]);
     planet.draw(canvas);
 
     // Create a color scale for the various earthquake magnitudes; the
