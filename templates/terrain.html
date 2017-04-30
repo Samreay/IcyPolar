@@ -43,7 +43,7 @@
             data[j++] = all/(12*scale);
         }
 
-        return data;
+        return [data, img.width, img.height];
     }
 
     var img = new Image();
@@ -51,7 +51,9 @@
 
         //get height data from img
         var data = getHeightData(img);
-
+        var imgwidth = data[1];
+        var imgheight = data[2];
+        var data = data[0];
 
         var width  = window.innerWidth, height = window.innerHeight, terrainSize = 60;
 
@@ -69,12 +71,10 @@
 
         document.getElementById('webgl').appendChild(renderer.domElement);
 
-        var plane = new THREE.PlaneGeometry(terrainSize, terrainSize, 199, 199);
+        var plane = new THREE.PlaneGeometry(terrainSize, terrainSize, imgwidth-1, imgheight-1);
 
         var textureLoader = THREE.ImageUtils;
-        var colorMap = textureLoader.loadTexture('/static/terrain/jotunheimen-texture.jpg');
-
-
+        var colorMap = textureLoader.loadTexture('/static/terrain/ant4.jpg');
 
         var material = new THREE.MeshBasicMaterial({
             map: colorMap
@@ -111,7 +111,7 @@
 
     };
     // load img source
-    img.src = "/static/terrain/jotunheimen.png";
+    img.src = "/static/terrain/ant.jpg";
 
 
 
