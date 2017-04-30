@@ -2,14 +2,19 @@
 
 from __future__ import print_function
 
-import os
 import sys
-import re
+import argparse
 
 import numpy as np
 from scipy.interpolate import griddata
 
 import common
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-o", "--output_filename", required=True,
+                    help="Path to the output raster file.")
+parser.add_argument("files", nargs='*', help="Files to be processed.")
+args = parser.parse_args()
 
 
 def read_NASA_csv(filename, header_length=10):
@@ -26,17 +31,11 @@ def read_NASA_csv(filename, header_length=10):
     return lng, lat, elev
 
 
-def save_raster_file(data, xmin, ymin, resolution, output_filename=None):
+def save_raster_file(data, xmin, ymin, resolution, output_filename):
     nrows, ncols = data.shape
     xllcorner = xmin
     yllcorner = ymin
-    cellsize = resolution
-
-    if output_filename is None:
-        pre, _ = os.path.splitext(f)
-        # Strip the leading slashes
-        pre = re.search(r"/(.*)", pre).group(1)
-        output_filename = pre + "_raster.txt"
+    cellsize = 1
 
     with open(output_filename, 'w') as o:
         o.write("ncols %s\n" % ncols)
@@ -49,22 +48,46 @@ def save_raster_file(data, xmin, ymin, resolution, output_filename=None):
         for l in data:
             o.write('\t'.join([str(v) for v in l]))
             o.write('\n')
-    
+
     print("Saved: %s" % output_filename, file=sys.stderr)
-    
+
 
 if __name__ == "__main__":
-    for f in sys.argv[1:]:
+    x = np.array([])
+    y = np.array([])
+    z = np.array([])
+    for f in args.files:
         # Read CSV file
         lng, lat, elev = read_NASA_csv(f)
-        x, y, z = common.LLA_to_ECEF(lng, lat, elev)
+        x2, y2, _ = common.LLA_to_ECEF(lng, lat, elev)
+        z2 = elev
 
-        # Resolution is determined by the average separation between points.
-        # Use the smallest separation between longitude and latitudes for square pixels.
-        resolution = min([np.diff(sorted(x)).mean(), np.diff(sorted(y)).mean()])
+        x = np.concatenate((x, x2))
+        y = np.concatenate((y, y2))
+        z = np.concatenate((z, z2))
 
-        grid_x, grid_y = np.meshgrid(np.arange(x.min(), x.max(), resolution),
-                                     np.arange(y.min(), y.max(), resolution))
-        cartesian_grid = griddata(np.vstack((x, y)).T, z,
-                                  (grid_x, grid_y), method="linear", fill_value=-99)
-        save_raster_file(cartesian_grid, x.min(), y.min(), resolution)
+    # Resolution is determined by the average separation between points.
+    # Use the smallest separation between longitude and latitudes for square pixels.
+    # resolution = min([np.diff(sorted(x)).mean(), np.diff(sorted(y)).mean()]) * 40
+    resolution = 6000
+
+    # xu = np.mean(x)
+    # xs = np.std(x)
+    # yu = np.mean(y)
+    # ys = np.std(y)
+    # print(xu-xs, xu+xs)
+    # print(yu-ys, yu+ys)
+
+    # These values are the xu-xs, xu+xs, yu-ys and yu+ys for the first dataset (2009)
+    xmin, xmax = -4167038.04665, 279277.487682
+    ymin, ymax = -2685908.36468, 2479713.52965
+
+    # grid_x, grid_y = np.meshgrid(np.arange(xu-xs, xu+xs, resolution),
+    #                              np.arange(yu-ys, yu+ys, resolution))
+    # grid_x, grid_y = np.meshgrid(np.linspace(xu-xs, xu+xs, resolution),
+    #                              np.linspace(yu-ys, yu+ys, resolution))
+    grid_x, grid_y = np.meshgrid(np.linspace(xmin, xmax, resolution),
+                                 np.linspace(ymin, ymax, resolution))
+    cartesian_grid = griddata(np.vstack((x, y)).T, z,
+                              (grid_x, grid_y), method="linear", fill_value=-99)
+    save_raster_file(cartesian_grid, x.min(), y.min(), resolution, output_filename=args.output_filename)
