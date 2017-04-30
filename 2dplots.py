@@ -42,7 +42,7 @@ for line in co2:
     colevels.append(float(line[4]))
     co2time.append(float(line[1]))
 
-for iyear in range(2009, 2014):
+for iyear in range(2009, 2016):
     tempfig = plt.figure()
     ax = tempfig.add_subplot(111)
     ax.plot(years,temp, color="#5791af")
