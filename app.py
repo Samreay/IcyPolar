@@ -4,7 +4,7 @@ from flask import Flask, send_file
 
 app = Flask(__name__)
 
-@app.route("/antartica")
+@app.route("/antarctica")
 def antartica():
     return send_file("templates/antartica.html")
 
