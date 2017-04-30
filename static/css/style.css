@@ -36,3 +36,11 @@ body {
 .topleft h2 {
     color: #afd9ee;
 }
+
+.reddot {
+    position: fixed;
+    left: calc(100% - 150px);
+    top: calc(100% - 160px);
+    color: #c90000;
+    font-size: 1.3em;
+}
